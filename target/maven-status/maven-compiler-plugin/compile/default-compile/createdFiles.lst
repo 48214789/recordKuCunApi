@@ -1,0 +1,8 @@
+com\example\record\model\Product.class
+com\example\record\repository\CategoryRepository.class
+com\example\record\controller\CategoryController.class
+com\example\record\common\ApiResult.class
+com\example\record\model\Category.class
+com\example\record\Application.class
+com\example\record\controller\ProductController.class
+com\example\record\repository\ProductRepository.class
