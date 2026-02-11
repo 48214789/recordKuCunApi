@@ -2,6 +2,7 @@ E:\record-java\src\main\java\com\example\record\controller\CategoryController.ja
 E:\record-java\src\main\java\com\example\record\model\Product.java
 E:\record-java\src\main\java\com\example\record\repository\ProductRepository.java
 E:\record-java\src\main\java\com\example\record\common\ApiResult.java
+E:\record-java\src\main\java\com\example\record\config\WebConfig.java
 E:\record-java\src\main\java\com\example\record\controller\ProductController.java
 E:\record-java\src\main\java\com\example\record\repository\CategoryRepository.java
 E:\record-java\src\main\java\com\example\record\model\Category.java

@@ -15,6 +15,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/product")
@@ -340,6 +341,109 @@ public class ProductController {
             e.printStackTrace();
             return ApiResult.error("设置库存失败: " + e.getMessage());
         }
+    }
+
+    @PostMapping("/delete")
+    public ApiResult<Object> delete(@RequestParam Long productId) {
+        try {
+            boolean deleted = productRepo.delete(productId);
+
+            if (!deleted) {
+                return ApiResult.error("商品不存在或删除失败");
+            }
+
+            return ApiResult.ok("删除成功");
+
+        } catch (Exception e) {
+            return ApiResult.error("删除失败: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/delete-all")
+    public ApiResult<Object> deleteAll(HttpServletRequest request) {
+        try {
+            System.out.println("开始删除所有商品");
+
+            // 1. 删除所有商品图片
+            List<Product> products = productRepo.findAll();
+            for (Product product : products) {
+                deleteProductImage(product);
+            }
+
+            // 2. 删除所有商品数据
+            productRepo.deleteAll();
+
+            // 3. 重置所有分类的总库存为0
+            List<Category> categories = categoryRepo.findAll();
+            for (Category category : categories) {
+                category.setTotalCount(0L);
+                categoryRepo.update(category);
+            }
+
+            System.out.println("✅ 所有商品删除成功，分类总库存已重置");
+            return ApiResult.ok("删除成功");
+
+        } catch (Exception e) {
+            System.err.println("删除所有商品失败: " + e.getMessage());
+            e.printStackTrace();
+            return ApiResult.error("删除失败: " + e.getMessage());
+        }
+    }
+
+    // 辅助方法：删除商品图片（与CategoryController中的类似，但更通用）
+    private void deleteProductImage(Product product) {
+        if (product.getImagePath() != null && !product.getImagePath().isEmpty()) {
+            try {
+                String imagePath = product.getImagePath();
+                String filePath = extractLocalFilePath(imagePath);
+
+                if (filePath != null) {
+                    File imageFile = new File(filePath);
+                    if (imageFile.exists()) {
+                        boolean deleted = imageFile.delete();
+                        System.out.println("删除商品图片文件: " + filePath + ", 结果: " + deleted);
+
+                        // 尝试删除可能存在的空目录
+                        File parentDir = imageFile.getParentFile();
+                        if (parentDir != null && parentDir.isDirectory() && parentDir.listFiles().length == 0) {
+                            boolean dirDeleted = parentDir.delete();
+                            System.out.println("删除空目录: " + parentDir.getPath() + ", 结果: " + dirDeleted);
+                        }
+                    } else {
+                        System.out.println("商品图片文件不存在: " + filePath);
+                    }
+                }
+            } catch (Exception e) {
+                System.err.println("删除商品图片异常: " + e.getMessage());
+            }
+        }
+    }
+
+    // 辅助方法：从URL或路径中提取本地文件路径
+    private String extractLocalFilePath(String imagePath) {
+        if (imagePath == null || imagePath.isEmpty()) {
+            return null;
+        }
+
+        String projectRoot = System.getProperty("user.dir");
+        String filePath = null;
+
+        if (imagePath.startsWith("http")) {
+            // 从URL中提取文件名
+            String[] parts = imagePath.split("/uploads/");
+            if (parts.length > 1) {
+                String relativePath = parts[1];
+                filePath = projectRoot + File.separator + "uploads" + File.separator + relativePath;
+            }
+        } else if (imagePath.startsWith("/uploads/")) {
+            // 相对路径
+            filePath = projectRoot + imagePath.replace("/", File.separator);
+        } else {
+            // 直接路径
+            filePath = imagePath;
+        }
+
+        return filePath;
     }
 
     // 辅助方法：获取基础URL

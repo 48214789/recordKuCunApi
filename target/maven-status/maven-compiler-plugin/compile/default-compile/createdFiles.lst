@@ -5,4 +5,5 @@ com\example\record\common\ApiResult.class
 com\example\record\model\Category.class
 com\example\record\Application.class
 com\example\record\controller\ProductController.class
+com\example\record\config\WebConfig.class
 com\example\record\repository\ProductRepository.class
